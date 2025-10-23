@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মাওলানা মোঃ মাহফুজুর রহমান - নির্বাচনী ক্যাম্পেইন</title>
+    <!--
+    ==================== DATABASE SETUP GUIDE ====================
+    
+    📊 OPTION 1: SHEETDB (সবচেয়ে সহজ - প্রস্তাবিত)
+    
+    ধাপ ১: Google Sheet তৈরি করুন
+    - Google Sheets এ যান: https://sheets.google.com
+    - নতুন Sheet তৈরি করুন
+    - প্রথম সারিতে হেডার লিখুন: id, name, phone, address, supportType, message, date
+    
+    ধাপ ২: SheetDB সেটআপ
+    - https://sheetdb.io তে যান
+    - "Create Database" ক্লিক করুন
+    - আপনার Google Sheet এর লিংক পেস্ট করুন
+    - Free Plan নিন (মাসে ১০০০ রিকোয়েস্ট ফ্রি)
+    - API URL কপি করুন (যেমন: https://sheetdb.io/api/v1/abcd1234efgh)
+    
+    ধাপ ৩: কোডে API URL যুক্ত করুন
+    - নিচের JavaScript এ SHEETDB_CONFIG এর apiUrl এ আপনার URL দিন
+    - useSheetDB: true করুন
+    
+    ✅ সুবিধা: সেটআপ সহজ, রিয়েল-টাইম ডাটা, কোনো কোডিং লাগে না
+    
+    -----------------------------------------------------------
+    
+    📊 OPTION 2: GOOGLE SHEETS API (একটু জটিল কিন্তু ফ্রি)
+    
+    ধাপ ১: Google Cloud Project তৈরি
+    - https://console.cloud.google.com এ যান
+    - নতুন প্রজেক্ট তৈরি করুন
+    - "APIs & Services" > "Library" এ যান
+    - "Google Sheets API" সার্চ করে Enable করুন
+    
+    ধাপ ২: API Key তৈরি
+    - "APIs & Services" > "Credentials" এ যান
+    - "Create Credentials" > "API Key" সিলেক্ট করুন
+    - API Key কপি করুন
+    
+    ধাপ ৩: Google Sheet শেয়ার করুন
+    - আপনার Google Sheet খুলুন
+    - "Share" বাটনে ক্লিক করুন
+    - "Anyone with the link can view" সেট করুন
+    - Sheet এর URL থেকে ID কপি করুন
+      (URL: https://docs.google.com/spreadsheets/d/SHEET_ID/edit)
+    
+    ধাপ ৪: কোডে কনফিগার করুন
+    - GOOGLE_SHEETS_CONFIG এ apiKey এবং spreadsheetId দিন
+    
+    ⚠️ সীমাবদ্ধতা: শুধু ডাটা পড়া যাবে, লেখার জন্য Apps Script লাগবে
+    
+    -----------------------------------------------------------
+    
+    📊 OPTION 3: GOOGLE APPS SCRIPT (সম্পূর্ণ নিয়ন্ত্রণ)
+    
+    ধাপ ১: Google Sheet এ Apps Script খুলুন
+    - Tools > Script Editor
+    
+    ধাপ ২: নিচের কোড পেস্ট করুন:
+    
+    function doPost(e) {
+      var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+      var data = JSON.parse(e.postData.contents);
+      
+      sheet.appendRow([
+        data.id,
+        data.name,
+        data.phone,
+        data.address,
+        data.supportType,
+        data.message,
+        data.date
+      ]);
+      
+      return ContentService.createTextOutput(JSON.stringify({status: 'success'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    function doGet(e) {
+      var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+      var data = sheet.getDataRange().getValues();
+      
+      return ContentService.createTextOutput(JSON.stringify(data))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    ধাপ ৩: Deploy করুন
+    - Deploy > New Deployment
+    - "Web App" সিলেক্ট করুন
+    - "Anyone" access দিন
+    - Deploy করুন
+    - Web App URL কপি করুন
+    
+    ধাপ ৪: কোডে URL যুক্ত করুন
+    - saveToGoogleSheets ফাংশনে appsScriptUrl এ URL দিন
+    
+    ✅ সুবিধা: সম্পূর্ণ ফ্রি, সীমাহীন ব্যবহার
+    
+    ===========================================================
+    -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            color: white;
+            padding: 25px 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 48px;
+        }
+
+        .header-title h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header-title p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            background: white;
+            border-radius: 15px;
+            padding: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6b7280;
+            transition: all 0.3s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-tab:hover {
+            background: #f3f4f6;
+            color: #2563eb;
+        }
+
+        .nav-tab.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* Content Area */
+        .content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .hero-image {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: #ddd;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            border: 5px solid white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+
+        .hero-slogan {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            background: white;
+            color: #1e3a8a;
+            padding: 15px 30px;
+            border-radius: 10px;
+            display: inline-block;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .symbol-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card.blue { background: #eff6ff; }
+        .stat-card.green { background: #f0fdf4; }
+        .stat-card.purple { background: #faf5ff; }
+        .stat-card.orange { background: #fff7ed; }
+
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* Promises Section */
+        .promises {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .promises h2 {
+            color: #1e3a8a;
+            font-size: 28px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .promise-item {
+            display: flex;
+            align-items: start;
+            gap: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .promise-item:hover {
+            background: #f3f4f6;
+            transform: translateX(5px);
+        }
+
+        .check-icon {
+            color: #2563eb;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #1e40af;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Contact Cards */
+        .contact-card {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: start;
+            gap: 15px;
+        }
+
+        .contact-card.blue { background: #eff6ff; }
+        .contact-card.green { background: #f0fdf4; }
+        .contact-card.purple { background: #faf5ff; }
+
+        .contact-icon {
+            font-size: 24px;
+        }
+
+        /* Analytics */
+        .analytics-section {
+            margin-bottom: 30px;
+        }
+
+        .analytics-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .progress-item {
+            margin-bottom: 15px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .progress-bar-container {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: #2563eb;
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            transition: width 0.5s;
+        }
+
+        /* Footer */
+        footer {
+            background: #1e3a8a;
+            color: white;
+            text-align: center;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        footer .footer-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 28px; }
+            .hero-slogan { font-size: 18px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .header-title h1 { font-size: 20px; }
+            .nav-tabs { flex-wrap: nowrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo">⚖️</div>
+                    <div class="header-title">
+                        <h1>মাওলানা মোঃ মাহফুজুর রহমান</h1>
+                        <p>নওগাঁ-৩ (মহাদেবপুর-বদলগাছী)</p>
+                    </div>
+                </div>
+                <div style="font-size: 30px; cursor: pointer;">📤</div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('home')">
+                🏠 হোম
+            </button>
+            <button class="nav-tab" onclick="showTab('support')">
+                👥 সমর্থন
+            </button>
+            <button class="nav-tab" onclick="showTab('contact')">
+                📞 যোগাযোগ
+            </button>
+            <button class="nav-tab" onclick="showTab('analytics')">
+                📊 পরিসংখ্যান
+            </button>
+        </div>
+
+        <!-- Home Content -->
+        <div id="home" class="content active">
+            <!-- Hero Section -->
+            <div class="hero">
+                <div class="hero-image">
+                    <!-- এখানে আপনার ছবির URL দিন -->
+                    <img id="candidatePhoto" src="" alt="মাওলানা মোঃ মাহফুজুর রহমান" 
+                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none;">
+                    <!-- ছবি না থাকলে এই আইকন দেখাবে -->
+                    <span id="photoPlaceholder">👤</span>
+                </div>
+                <h1>মাওলানা মোঃ মাহফুজুর রহমান</h1>
+                <p class="hero-slogan">আল্লাহর আইন চাই! সৎ লোকের শাসন চাই!</p>
+                <div class="badge">
+                    আগামী জাতীয় সংসদ নির্বাচনে বাংলাদেশ জামায়াতে ইসলামী মনোনীত
+                </div>
+                <div class="symbol-section">
+                    <span style="font-size: 40px;">⚖️</span>
+                    <span>দাঁড়িপাল্লায় ভোট দিন</span>
+                </div>
+                <p style="margin-top: 15px; font-size: 20px;">(মহাদেবপুর-বদলগাছী) ৪৮ নওগাঁ-৩ আসনের</p>
+                <p style="margin-top: 10px; font-size: 14px;">কেন্দ্রীয় মজলিসে শূরা সদস্য ও সহকারী সেক্রেটারী বাংলাদেশ জামায়াতে ইসলামী ঢাকা মহানগরী উত্তর</p>
+            </div>
+
+            <!-- Promises -->
+            <div class="promises">
+                <h2>❤️ আমাদের প্রতিশ্রুতি</h2>
+                <div class="promise-item">
+                    <span class="check-icon">✓</span>
+                    <span>ন্যায়বিচার প্রতিষ্ঠা ও আইনের শাসন নিশ্চিতকরণ</span>
+                </div>
+                <div class="promise-item">
+                    <span class="check-icon">✓</span>
+                    <span>শিক্ষা ও স্বাস্থ্যসেবার উন্নয়ন</span>
+                </div>
+                <div class="promise-item">
+                    <span class="check-icon">✓</span>
+                    <span>কৃষি ও গ্রামীণ উন্নয়ন</span>
+                </div>
+                <div class="promise-item">
+                    <span class="check-icon">✓</span>
+                    <span>যুবসমাজের কর্মসংস্থান সৃষ্টি</span>
+                </div>
+                <div class="promise-item">
+                    <span class="check-icon">✓</span>
+                    <span>দুর্নীতিমুক্ত প্রশাসন গঠন</span>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-number" id="supporterCount">0</div>
+                    <div class="stat-label">সমর্থক</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-number" id="eventCount">0</div>
+                    <div class="stat-label">অনুষ্ঠান</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-icon">📍</div>
+                    <div class="stat-number">2</div>
+                    <div class="stat-label">উপজেলা</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">❤️</div>
+                    <div class="stat-number">48</div>
+                    <div class="stat-label">আসন নং</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Content -->
+        <div id="support" class="content">
+            <h2 style="color: #1e3a8a; font-size: 28px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                👥 সমর্থন নিবন্ধন
+            </h2>
+            <div class="form-group">
+                <label>নাম *</label>
+                <input type="text" id="name" placeholder="আপনার নাম লিখুন" required>
+            </div>
+            <div class="form-group">
+                <label>মোবাইল নম্বর *</label>
+                <input type="tel" id="phone" placeholder="০১×××××××××" required>
+            </div>
+            <div class="form-group">
+                <label>ঠিকানা *</label>
+                <input type="text" id="address" placeholder="গ্রাম, ইউনিয়ন, উপজেলা" required>
+            </div>
+            <div class="form-group">
+                <label>সমর্থনের ধরন</label>
+                <select id="supportType">
+                    <option value="volunteer">স্বেচ্ছাসেবক</option>
+                    <option value="donor">অনুদানকারী</option>
+                    <option value="campaigner">প্রচারক</option>
+                    <option value="voter">ভোটার</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>বার্তা (ঐচ্ছিক)</label>
+                <textarea id="message" rows="4" placeholder="আপনার মতামত বা পরামর্শ লিখুন"></textarea>
+            </div>
+            <button class="btn-primary" onclick="submitSupport()">নিবন্ধন করুন</button>
+        </div>
+
+       <!-- Contact Content -->
+        <div id="contact" class="content">
+            <h2 style="color: #1e3a8a; font-size: 28px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                📞 যোগাযোগ
+            </h2>
+            <div class="contact-card blue">
+                <div class="contact-icon">📍</div>
+                <div>
+                    <div style="font-weight: bold; margin-bottom: 5px;">ঠিকানা:</div>
+                    <div>মহাদেবপুর-বদলগাছী নওগাঁ-৩ আসনের সর্বস্তরের জনসাধারণ</div>
+                </div>
+            </div>
+            <div class="contact-card green">
+                <div class="contact-icon">📞</div>
+                <div>
+                    <div style="font-weight: bold; margin-bottom: 5px;">মোবাইল:</div>
+                    <div>যোগাযোগের জন্য স্থানীয় কার্যালয়ে যোগাযোগ করুন</div>
+                </div>
+            </div>
+            <div class="contact-card purple">
+                <div class="contact-icon">💬</div>
+                <div>
+                    <div style="font-weight: bold; margin-bottom: 5px;">সংগঠন:</div>
+                    <div>বাংলাদেশ জামায়াতে ইসলামী</div>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 40px; border-radius: 15px; text-align: c
