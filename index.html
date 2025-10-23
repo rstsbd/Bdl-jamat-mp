@@ -647,10 +647,198 @@
                 </div>
             </div>
 
-            <div style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 40px; border-radius: 15px; text-align: c
+            <div style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 40px; border-radius: 15px; text-align: center; margin-top: 30px;">
+                <div style="font-size: 70px; margin-bottom: 15px;">⚖️</div>
+                <h3 style="font-size: 28px; margin-bottom: 10px;">দাঁড়িপাল্লায় ভোট দিন</h3>
+                <p style="font-size: 18px;">নওগাঁ-৩ আসন (মহাদেবপুর-বদলগাছী)</p>
+            </div>
+        </div>
 
+        <!-- Analytics Content -->
+        <div id="analytics" class="content">
+            <h2 style="color: #1e3a8a; font-size: 28px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                📊 পরিসংখ্যান
+            </h2>
+            <div id="analyticsContent">
+                <p style="text-align: center; color: #6b7280; padding: 50px;">এখনও কোনো তথ্য নেই</p>
+            </div>
+        </div>
 
-                                    body: JSON.stringify({
+        <!-- Footer -->
+        <footer>
+            <div class="footer-icon">⚖️</div>
+            <p style="font-size: 22px; font-weight: bold; margin-bottom: 10px;">দাঁড়িপাল্লায় ভোট দিন</p>
+            <p style="font-size: 16px; margin-bottom: 15px;">আল্লাহর আইন চাই! সৎ লোকের শাসন চাই!</p>
+            <p style="font-size: 12px; opacity: 0.8;">© ২০২৫ সর্বস্বত্ব সংরক্ষিত</p>
+        </footer>
+    </div>
+
+    <script>
+        let supporters = [];
+
+        // ছবির URL এখানে সেট করুন
+        const CANDIDATE_PHOTO_URL = 'https://example.com/your-photo.jpg'; // এখানে আপনার ছবির লিংক দিন
+
+        // ==================== DATABASE CONFIGURATION ====================
+        
+        // 📊 OPTION 1: GOOGLE SHEETS API CONFIGURATION
+        // Google Sheets কে ডাটাবেজ হিসেবে ব্যবহার করতে:
+        // ১. Google Cloud Console এ যান: https://console.cloud.google.com
+        // ২. নতুন প্রজেক্ট তৈরি করুন
+        // ৩. Google Sheets API enable করুন
+        // ৪. API Key তৈরি করুন
+        // ৫. আপনার Google Sheet এর ID নিন (URL থেকে)
+        
+        const GOOGLE_SHEETS_CONFIG = {
+            apiKey: 'YOUR_GOOGLE_API_KEY_HERE', // এখানে আপনার API Key দিন
+            spreadsheetId: 'YOUR_SPREADSHEET_ID_HERE', // Sheet এর ID দিন
+            sheetName: 'Supporters', // Sheet এর নাম
+            range: 'A:G' // কোন কলাম পর্যন্ত পড়বে
+        };
+
+        // 📊 OPTION 2: SHEETDB CONFIGURATION  
+        // SheetDB কে ডাটাবেজ হিসেবে ব্যবহার করতে (সবচেয়ে সহজ):
+        // ১. https://sheetdb.io তে যান
+        // ২. নতুন প্রজেক্ট তৈরি করুন
+        // ৩. আপনার Google Sheet এর লিংক দিন
+        // ৪. API URL কপি করুন
+        
+        const SHEETDB_CONFIG = {
+            apiUrl: 'https://sheetdb.io/api/v1/YOUR_SHEET_ID', // SheetDB API URL
+            useSheetDB: false // true করলে SheetDB ব্যবহার হবে
+        };
+
+        // ==================== END DATABASE CONFIGURATION ====================
+
+        // Load data on page load
+        window.addEventListener('load', async () => {
+            await loadData();
+            updateStats();
+            updateAnalytics();
+            loadCandidatePhoto();
+        });
+
+        // Load candidate photo
+        function loadCandidatePhoto() {
+            const photo = document.getElementById('candidatePhoto');
+            const placeholder = document.getElementById('photoPlaceholder');
+            
+            if (CANDIDATE_PHOTO_URL && CANDIDATE_PHOTO_URL !== 'https://example.com/your-photo.jpg') {
+                photo.src = CANDIDATE_PHOTO_URL;
+                photo.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                // If photo fails to load, show placeholder
+                photo.onerror = function() {
+                    photo.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                };
+            }
+        }
+
+        // Load data from storage
+        async function loadData() {
+            // SheetDB ব্যবহার করলে
+            if (SHEETDB_CONFIG.useSheetDB && SHEETDB_CONFIG.apiUrl.includes('sheetdb.io')) {
+                await loadFromSheetDB();
+                return;
+            }
+            
+            // Google Sheets API ব্যবহার করলে
+            if (GOOGLE_SHEETS_CONFIG.apiKey !== 'YOUR_GOOGLE_API_KEY_HERE') {
+                await loadFromGoogleSheets();
+                return;
+            }
+            
+            // না হলে Local Storage থেকে লোড
+            try {
+                const result = await window.storage.get('supporters-list');
+                if (result && result.value) {
+                    supporters = JSON.parse(result.value);
+                }
+            } catch (error) {
+                console.log('Loading initial data');
+                supporters = [];
+            }
+        }
+
+        // SheetDB থেকে ডাটা লোড করা
+        async function loadFromSheetDB() {
+            try {
+                const response = await fetch(SHEETDB_CONFIG.apiUrl);
+                const data = await response.json();
+                supporters = data.map(row => ({
+                    id: row.id || Date.now(),
+                    name: row.name || row.নাম,
+                    phone: row.phone || row.মোবাইল,
+                    address: row.address || row.ঠিকানা,
+                    supportType: row.supportType || row.সমর্থনের_ধরন || 'volunteer',
+                    message: row.message || row.বার্তা || '',
+                    date: row.date || row.তারিখ || new Date().toLocaleDateString('bn-BD')
+                }));
+                console.log('Data loaded from SheetDB:', supporters.length);
+            } catch (error) {
+                console.error('Error loading from SheetDB:', error);
+                supporters = [];
+            }
+        }
+
+        // Google Sheets থেকে ডাটা লোড করা
+        async function loadFromGoogleSheets() {
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEETS_CONFIG.spreadsheetId}/values/${GOOGLE_SHEETS_CONFIG.sheetName}!${GOOGLE_SHEETS_CONFIG.range}?key=${GOOGLE_SHEETS_CONFIG.apiKey}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.values && data.values.length > 1) {
+                    // প্রথম সারি হেডার, তাই স্কিপ করি
+                    supporters = data.values.slice(1).map((row, index) => ({
+                        id: row[0] || Date.now() + index,
+                        name: row[1] || '',
+                        phone: row[2] || '',
+                        address: row[3] || '',
+                        supportType: row[4] || 'volunteer',
+                        message: row[5] || '',
+                        date: row[6] || new Date().toLocaleDateString('bn-BD')
+                    }));
+                    console.log('Data loaded from Google Sheets:', supporters.length);
+                }
+            } catch (error) {
+                console.error('Error loading from Google Sheets:', error);
+                supporters = [];
+            }
+        }
+
+        // Save data to storage
+        async function saveData() {
+            // SheetDB এ সেভ করা
+            if (SHEETDB_CONFIG.useSheetDB && SHEETDB_CONFIG.apiUrl.includes('sheetdb.io')) {
+                await saveToSheetDB();
+                return;
+            }
+            
+            // Google Sheets এ সেভ করতে হলে Apps Script দরকার
+            // এখানে শুধু লোকাল স্টোরেজে সেভ করছি
+            try {
+                await window.storage.set('supporters-list', JSON.stringify(supporters));
+                console.log('Data saved to local storage');
+            } catch (error) {
+                console.error('Error saving data:', error);
+            }
+        }
+
+        // SheetDB তে ডাটা সেভ করা
+        async function saveToSheetDB() {
+            try {
+                const latestSupporter = supporters[supporters.length - 1];
+                
+                const response = await fetch(SHEETDB_CONFIG.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                     },
+                    body: JSON.stringify({
                         data: [{
                             id: latestSupporter.id,
                             name: latestSupporter.name,
