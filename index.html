@@ -648,3 +648,168 @@
             </div>
 
             <div style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 40px; border-radius: 15px; text-align: c
+
+
+                                    body: JSON.stringify({
+                        data: [{
+                            id: latestSupporter.id,
+                            name: latestSupporter.name,
+                            phone: latestSupporter.phone,
+                            address: latestSupporter.address,
+                            supportType: latestSupporter.supportType,
+                            message: latestSupporter.message,
+                            date: latestSupporter.date
+                        }]
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log('Data saved to SheetDB successfully');
+                    // লোকাল স্টোরেজেও সেভ করি ব্যাকআপ হিসেবে
+                    await window.storage.set('supporters-list', JSON.stringify(supporters));
+                } else {
+                    throw new Error('Failed to save to SheetDB');
+                }
+            } catch (error) {
+                console.error('Error saving to SheetDB:', error);
+                // ব্যর্থ হলে লোকাল স্টোরেজে সেভ করি
+                await window.storage.set('supporters-list', JSON.stringify(supporters));
+            }
+        }
+
+        // Google Sheets এ ডাটা পাঠাতে (Apps Script প্রয়োজন)
+        async function saveToGoogleSheets(supporter) {
+            // Google Sheets এ সরাসরি POST করা যায় না
+            // এর জন্য Google Apps Script দিয়ে Web App তৈরি করতে হবে
+            // নিচে Apps Script এর কোড দেওয়া আছে কমেন্টে
+            
+            try {
+                // আপনার Apps Script Web App এর URL এখানে দিন
+                const appsScriptUrl = 'YOUR_APPS_SCRIPT_WEB_APP_URL';
+                
+                if (appsScriptUrl !== 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+                    const response = await fetch(appsScriptUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(supporter)
+                    });
+                    console.log('Data sent to Google Sheets');
+                }
+            } catch (error) {
+                console.error('Error saving to Google Sheets:', error);
+            }
+        }
+
+        // Show tab
+        function showTab(tabName) {
+            // Hide all contents
+            const contents = document.querySelectorAll('.content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // Remove active from all tabs
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active to selected tab
+            event.target.classList.add('active');
+        }
+
+        // Submit support form
+        async function submitSupport() {
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const supportType = document.getElementById('supportType').value;
+            const message = document.getElementById('message').value.trim();
+
+            if (!name || !phone || !address) {
+                alert('অনুগ্রহ করে সকল আবশ্যক তথ্য পূরণ করুন');
+                return;
+            }
+
+            const newSupporter = {
+                id: Date.now(),
+                name,
+                phone,
+                address,
+                supportType,
+                message,
+                date: new Date().toLocaleDateString('bn-BD')
+            };
+
+            supporters.push(newSupporter);
+            await saveData();
+
+            alert('আপনার তথ্য সফলভাবে জমা হয়েছে। ধন্যবাদ!');
+
+            // Clear form
+            document.getElementById('name').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('address').value = '';
+            document.getElementById('message').value = '';
+            document.getElementById('supportType').value = 'volunteer';
+
+            updateStats();
+            updateAnalytics();
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('supporterCount').textContent = supporters.length;
+        }
+
+        // Update analytics
+        function updateAnalytics() {
+            const analyticsContent = document.getElementById('analyticsContent');
+
+            if (supporters.length === 0) {
+                analyticsContent.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 50px;">এখনও কোনো তথ্য নেই</p>';
+                return;
+            }
+
+            const types = {
+                volunteer: 'স্বেচ্ছাসেবক',
+                donor: 'অনুদানকারী',
+                campaigner: 'প্রচারক',
+                voter: 'ভোটার'
+            };
+
+            let html = '<div class="analytics-section">';
+            html += '<div class="analytics-title">সমর্থনের ধরন অনুযায়ী বিভাজন</div>';
+
+            for (let type in types) {
+                const count = supporters.filter(s => s.supportType === type).length;
+                const percentage = ((count / supporters.length) * 100).toFixed(1);
+
+                html += `
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>${types[type]}</span>
+                            <span>${percentage}%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${percentage}%">${count}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            html += `
+                <div style="background: #eff6ff; padding: 25px; border-radius: 15px; text-align: center;">
+                    <div style="font-size: 16px; font-weight: 600; margin-bottom: 10px;">সর্বমোট নিবন্ধিত সমর্থক</div>
+                    <div style="font-size: 48px; font-weight: bold; color: #1e3a8a;">${supporters.length}</div>
+                </div>
+            `;
+
+            analyticsContent.innerHTML = html;
+        }
+    </script>
+</body>
+            </html>
